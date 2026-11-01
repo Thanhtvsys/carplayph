@@ -70,18 +70,17 @@ def resolve_video():
     stream_url = None
     title = "YouTube Video"
 
-    # 1. Thử lần lượt qua các Invidious instance
+    # 1. Thử quét qua các Invidious instance
     invidious_instances = [
         "https://invidious.privacyredirect.com",
         "https://vid.priv.au",
-        "https://invidious.nerdworks.nl",
-        "https://inv.nadeko.net"
+        "https://invidious.nerdworks.nl"
     ]
     
     for instance in invidious_instances:
         try:
             api_url = f"{instance}/api/v1/videos/{video_id}"
-            res = requests.get(api_url, timeout=4)
+            res = requests.get(api_url, timeout=3)
             if res.status_code == 200:
                 vid_data = res.json()
                 title = vid_data.get('title', title)
@@ -97,17 +96,16 @@ def resolve_video():
         except Exception:
             continue
 
-    # 2. Nếu Invidious không thành công, tự động chuyển sang dự phòng bằng Piped API
+    # 2. Dự phòng bằng Piped API
     if not stream_url:
         piped_instances = [
             "https://pipedapi.kavin.rocks",
-            "https://pipedapi.projectsegfau.lt",
-            "https://pipedapi.ducks.party"
+            "https://pipedapi.projectsegfau.lt"
         ]
         for instance in piped_instances:
             try:
                 api_url = f"{instance}/streams/{video_id}"
-                res = requests.get(api_url, timeout=4)
+                res = requests.get(api_url, timeout=3)
                 if res.status_code == 200:
                     vid_data = res.json()
                     title = vid_data.get('title', title)
@@ -123,14 +121,22 @@ def resolve_video():
             except Exception:
                 continue
 
-    if stream_url:
+    # 3. Phương án dự phòng cuối cùng: Trả về link trực tiếp trang nhúng YouTube nếu các API đều nghẽn
+    if not stream_url:
+        # Sử dụng link embed chính hãng để giao diện web tự động hiển thị iframe phát video mượt mà không lo chết API
         return jsonify({
             'success': True,
+            'is_embed': True,
             'title': title,
-            'stream_url': stream_url
+            'stream_url': f"https://www.youtube.com/embed/{video_id}?autoplay=1&enablejsapi=1"
         })
-    
-    return jsonify({'success': False, 'error': 'Không thể lấy luồng video qua các API trung gian'}), 500
+
+    return jsonify({
+        'success': True,
+        'is_embed': False,
+        'title': title,
+        'stream_url': stream_url
+    })
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
