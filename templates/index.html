@@ -464,33 +464,39 @@
         }
 
         // Bật chế độ Picture-in-Picture (PiP) nổi
-        async function togglePiP() {
-            const videoPlayer = document.getElementById('player');
+async function togglePiP() {
+            const videoPlayer = document.querySelector('video');
+            
+            if (!videoPlayer) {
+                alert("Vui lòng chọn một bài hát để bắt đầu phát video trực tiếp trước khi bật PiP!");
+                return;
+            }
+
             try {
-                if (!videoPlayer) {
-                    alert("Chế độ PiP chỉ hỗ trợ khi phát luồng video trực tiếp!");
-                    return;
-                }
-                if (document.pictureInPictureElement) {
-                    await document.exitPictureInPicture();
-                } else if (document.pictureInPictureEnabled) {
-                    await videoPlayer.requestPictureInPicture();
-                } else if (videoPlayer.webkitSetPresentationMode) {
-                    // Hỗ trợ riêng cho Safari trên iPhone / iOS
+                // Hỗ trợ Safari trên iOS / macOS qua WebKit Presentation Mode
+                if (videoPlayer.webkitSupportsPresentationMode && typeof videoPlayer.webkitSetPresentationMode === "function") {
                     const currentMode = videoPlayer.webkitPresentationMode;
                     if (currentMode === 'picture-in-picture') {
                         videoPlayer.webkitSetPresentationMode('inline');
                     } else {
                         videoPlayer.webkitSetPresentationMode('picture-in-picture');
                     }
+                } 
+                // Hỗ trợ chuẩn PiP tiêu chuẩn của Chrome / Edge / Firefox / Safari desktop mới
+                else if (document.picturePictureEnabled || document.pictureInPictureEnabled) {
+                    if (document.pictureInPictureElement) {
+                        await document.exitPictureInPicture();
+                    } else {
+                        await videoPlayer.requestPictureInPicture();
+                    }
                 } else {
                     alert("Trình duyệt hoặc thiết bị của bạn không hỗ trợ chế độ PiP nổi!");
                 }
             } catch (err) {
                 console.error("Lỗi bật chế độ PiP:", err);
+                alert("Không thể kích hoạt PiP cho luồng video này.");
             }
         }
-
         // Tìm kiếm bằng giọng nói
         function startVoiceSearch() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
