@@ -429,9 +429,8 @@
             }
         }
 
-        // Phát video Full HD hoặc khung nhúng khi người dùng bấm vào bài hát
-        async function resolveAndPlay(videoId, title, element) {
-            document.getElementById('current-title').innerText = "Đang tải: " + title;
+ async function resolveAndPlay(videoId, title, element) {
+            document.getElementById('current-title').innerText = "⚡ Đang tải nhanh: " + title;
             
             if (element) {
                 document.querySelectorAll('.song-item').forEach(item => item.classList.remove('active'));
@@ -451,30 +450,36 @@
                 if (data.success && data.stream_url) {
                     if (data.is_embed) {
                         wrapper.innerHTML = `<iframe src="${data.stream_url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                        document.getElementById('current-title').innerText = "▶ Đang phát (Embed): " + data.title;
                     } else {
-                        wrapper.innerHTML = `<video id="player" src="${data.stream_url}" controls autoplay playsinline></video>`;
+                        // Tạo trực tiếp thẻ video chuẩn để hỗ trợ WebKit PiP tuyệt đối trên Safari iOS
+                        wrapper.innerHTML = `<video id="player" controls autoplay playsinline src="${data.stream_url}"></video>`;
+                        
+                        const newVideo = document.getElementById('player');
+                        newVideo.load();
+                        newVideo.play().catch(e => console.log("Auto-play blocked:", e));
+                        
+                        document.getElementById('current-title').innerText = "▶ Đang phát trực tiếp: " + data.title;
                     }
-                    document.getElementById('current-title').innerText = "▶ Đang phát: " + (data.title || title);
                 } else {
-                    alert("Lỗi tải video: " + (data.error || "Không lấy được luồng stream"));
+                    alert("Không lấy được luồng phát trực tiếp.");
                 }
             } catch (err) {
-                alert("Lỗi kết nối tới Backend Flask!");
+                alert("Lỗi kết nối máy chủ Flask!");
             }
         }
 
-        // Bật chế độ Picture-in-Picture (PiP) nổi
-async function togglePiP() {
-            const videoPlayer = document.querySelector('video');
+        async function togglePiP() {
+            const videoPlayer = document.getElementById('player');
             
-            if (!videoPlayer) {
-                alert("Vui lòng chọn một bài hát để bắt đầu phát video trực tiếp trước khi bật PiP!");
+            if (!videoPlayer || videoPlayer.tagName !== 'VIDEO') {
+                alert("Chế độ PiP chỉ hỗ trợ khi phát luồng video trực tiếp (không hỗ trợ dạng Iframe). Hãy chọn bài hát khác để chạy trực tiếp!");
                 return;
             }
 
             try {
-                // Hỗ trợ Safari trên iOS / macOS qua WebKit Presentation Mode
-                if (videoPlayer.webkitSupportsPresentationMode && typeof videoPlayer.webkitSetPresentationMode === "function") {
+                // Kích hoạt chuẩn PiP chuyên biệt cho Safari iOS / iPadOS (CarPlay)
+                if (typeof videoPlayer.webkitSetPresentationMode === "function") {
                     const currentMode = videoPlayer.webkitPresentationMode;
                     if (currentMode === 'picture-in-picture') {
                         videoPlayer.webkitSetPresentationMode('inline');
@@ -482,19 +487,19 @@ async function togglePiP() {
                         videoPlayer.webkitSetPresentationMode('picture-in-picture');
                     }
                 } 
-                // Hỗ trợ chuẩn PiP tiêu chuẩn của Chrome / Edge / Firefox / Safari desktop mới
-                else if (document.picturePictureEnabled || document.pictureInPictureEnabled) {
+                // Chuẩn PiP cho các trình duyệt khác
+                else if (document.pictureInPictureEnabled) {
                     if (document.pictureInPictureElement) {
                         await document.exitPictureInPicture();
                     } else {
                         await videoPlayer.requestPictureInPicture();
                     }
                 } else {
-                    alert("Trình duyệt hoặc thiết bị của bạn không hỗ trợ chế độ PiP nổi!");
+                    alert("Thiết bị của bạn không hỗ trợ tách màn hình PiP nổi.");
                 }
             } catch (err) {
-                console.error("Lỗi bật chế độ PiP:", err);
-                alert("Không thể kích hoạt PiP cho luồng video này.");
+                console.error("Lỗi PiP:", err);
+                alert("Không thể bật cửa sổ nổi PiP lúc này.");
             }
         }
         // Tìm kiếm bằng giọng nói
