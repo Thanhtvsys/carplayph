@@ -28,7 +28,6 @@
         }
         .header-bar h1 { color: #DB5304; font-size: 16px; white-space: nowrap; }
         
-        /* KHUNG TÌM KIẾM THỜI GIAN THỰC */
         .search-box {
             display: flex;
             gap: 6px;
@@ -82,7 +81,6 @@
             white-space: nowrap;
         }
 
-        /* CHIA ĐÔI MÀN HÌNH 50% - 50% */
         .content-layout {
             display: flex;
             flex: 1;
@@ -97,7 +95,6 @@
             .header-bar h1 { display: none; }
         }
 
-        /* KHUNG TRÁI: VIDEO PHÁT CHÍNH & NÚT ĐIỀU KHIỂN */
         .video-container {
             flex: 1;
             width: 50%;
@@ -178,7 +175,6 @@
             border: 1px solid #DB5304;
         }
 
-        /* KHUNG PHẢI: MENU CHỦ ĐỀ VỚI SCROLL VÀ NÚT ĐIỀU HƯỚNG */
         .right-container {
             flex: 1;
             width: 50%;
@@ -293,7 +289,6 @@
         }
         .song-artist { font-size: 11px; color: #888; }
 
-        /* MODAL KÍCH HOẠT KEY BẢN QUYỀN */
         .license-modal {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -353,9 +348,7 @@
         <button class="logout-btn" onclick="resetLicense()">ĐỔI MÃ KEY</button>
     </div>
 
-    <!-- GIAO DIỆN CHIA ĐÔI MÀN HÌNH 50% - 50% -->
     <div class="content-layout">
-        <!-- KHUNG TRÁI: VIDEO PHÁT CHÍNH & THANH CÔNG CỤ -->
         <div class="video-container">
             <div class="video-wrapper" id="player-wrapper">
                 <video id="player" controls playsinline></video>
@@ -369,7 +362,6 @@
             </div>
         </div>
 
-        <!-- KHUNG PHẢI: MENU CHỦ ĐỀ CÓ NÚT CUỘN ĐIỀU HƯỚNG & DANH SÁCH -->
         <div class="right-container">
             <div class="category-wrapper">
                 <button class="cat-nav-btn" onclick="scrollCategory(-1)">◀</button>
@@ -391,7 +383,6 @@
         </div>
     </div>
 
-    <!-- MÀN HÌNH NHẬP KEY BẢN QUYỀN -->
     <div id="license-overlay" class="license-modal" style="display: none;">
         <div class="license-box">
             <h2>🔑 KÍCH HOẠT BẢN QUYỀN Ô TÔ</h2>
@@ -405,19 +396,17 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby_HLylDMlpHKUinLUiUWlaWlCuoIxOoqYIb0U46o9ZW0QXP4jzuEX4hcRbdU-NNqU/exec";
 
-        // Cuộn menu chủ đề qua lại bằng nút bấm
         function scrollCategory(direction) {
             const menu = document.getElementById('category-menu-bar');
             menu.scrollBy({ left: direction * 200, behavior: 'smooth' });
         }
 
-        // Phóng to toàn màn hình khung video
         function toggleFullScreen() {
             const wrapper = document.getElementById('player-wrapper');
             if (!document.fullscreenElement) {
                 if (wrapper.requestFullscreen) {
                     wrapper.requestFullscreen();
-                } else if (wrapper.webkitRequestFullscreen) { /* Safari / iOS */
+                } else if (wrapper.webkitRequestFullscreen) {
                     wrapper.webkitRequestFullscreen();
                 }
             } else {
@@ -429,7 +418,7 @@
             }
         }
 
- async function resolveAndPlay(videoId, title, element) {
+        async function resolveAndPlay(videoId, title, element) {
             document.getElementById('current-title').innerText = "⚡ Đang tải nhanh: " + title;
             
             if (element) {
@@ -452,7 +441,6 @@
                         wrapper.innerHTML = `<iframe src="${data.stream_url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
                         document.getElementById('current-title').innerText = "▶ Đang phát (Embed): " + data.title;
                     } else {
-                        // Tạo trực tiếp thẻ video chuẩn để hỗ trợ WebKit PiP tuyệt đối trên Safari iOS
                         wrapper.innerHTML = `<video id="player" controls autoplay playsinline src="${data.stream_url}"></video>`;
                         
                         const newVideo = document.getElementById('player');
@@ -478,7 +466,10 @@
             }
 
             try {
-                // Kích hoạt chuẩn PiP chuyên biệt cho Safari iOS / iPadOS (CarPlay)
+                if (videoPlayer.paused) {
+                    await videoPlayer.play().catch(e => console.log("Play required for PiP:", e));
+                }
+
                 if (typeof videoPlayer.webkitSetPresentationMode === "function") {
                     const currentMode = videoPlayer.webkitPresentationMode;
                     if (currentMode === 'picture-in-picture') {
@@ -486,9 +477,7 @@
                     } else {
                         videoPlayer.webkitSetPresentationMode('picture-in-picture');
                     }
-                } 
-                // Chuẩn PiP cho các trình duyệt khác
-                else if (document.pictureInPictureEnabled) {
+                } else if (document.pictureInPictureEnabled) {
                     if (document.pictureInPictureElement) {
                         await document.exitPictureInPicture();
                     } else {
@@ -499,10 +488,10 @@
                 }
             } catch (err) {
                 console.error("Lỗi PiP:", err);
-                alert("Không thể bật cửa sổ nổi PiP lúc này.");
+                alert("Không thể bật cửa sổ nổi PiP lúc này. Hãy chạm vào màn hình video một lần rồi bấm lại.");
             }
         }
-        // Tìm kiếm bằng giọng nói
+
         function startVoiceSearch() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -534,7 +523,6 @@
             recognition.start();
         }
 
-        // Tìm kiếm và load danh sách thumbnail
         async function searchAndLoadPlaylist(query, element) {
             if (!query) return;
 
@@ -580,7 +568,6 @@
             }
         }
 
-        // Quản lý định danh phần cứng & Xác thực Key bản quyền qua localStorage
         function getDeviceId() {
             let deviceId = localStorage.getItem('app_device_id');
             if (!deviceId) {
