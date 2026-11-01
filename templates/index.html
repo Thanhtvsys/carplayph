@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarPlay YouTube No Ads & License</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #000000;
+            color: #FFFFFF;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #111;
+            border-bottom: 1px solid #222;
+            z-index: 10;
+        }
+        .header-bar h1 { color: #DB5304; font-size: 18px; }
+        
+        /* KHUNG TÌM KIẾM THỜI GIAN THỰC / PHÓNG TO KHI BẤM */
+        .search-box {
+            display: flex;
+            gap: 8px;
+            position: relative;
+        }
+        .search-box input {
+            background-color: #1A1A1A;
+            border: 1px solid #333;
+            color: #FFF;
+            padding: 8px 14px;
+            border-radius: 8px;
+            outline: none;
+            width: 280px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        .search-box input:focus {
+            width: 420px;
+            background-color: #222;
+            border-color: #DB5304;
+            box-shadow: 0 0 15px rgba(219, 83, 4, 0.4);
+        }
+        .search-box button {
+            background-color: #DB5304;
+            color: #FFF;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .mic-btn {
+            background-color: #222;
+            border: 1px solid #DB5304;
+            color: #DB5304;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .mic-btn:active { background-color: #DB5304; color: #FFF; }
+
+        .logout-btn {
+            background-color: #222;
+            color: #DB5304;
+            border: 1px solid #DB5304;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* CHIA ĐÔI MÀN HÌNH 50% - 50% */
+        .content-layout {
+            display: flex;
+            flex: 1;
+            width: 100vw;
+            height: calc(100vh - 50px);
+            overflow: hidden;
+        }
+
+        /* KHUNG TRÁI (50%): VIDEO PHÁT CHÍNH & NÚT PiP */
+        .video-container {
+            flex: 1;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            padding: 20px;
+            border-right: 2px solid #222;
+            position: relative;
+        }
+        .video-wrapper {
+            width: 100%;
+            max-width: 750px;
+            aspect-ratio: 16/9;
+            background-color: #111;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #333;
+            position: relative;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+        
+        .video-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 750px;
+            margin-top: 12px;
+        }
+        #current-title {
+            font-size: 15px;
+            color: #DB5304;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            padding-right: 15px;
+        }
+        .pip-btn {
+            background-color: #1A1A1A;
+            color: #DB5304;
+            border: 1px solid #DB5304;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .pip-btn:hover {
+            background-color: #DB5304;
+            color: #FFF;
+        }
+
+        /* KHUNG PHẢI (50%): MENU CHỦ ĐỀ & DANH SÁCH THUMBNAIL */
+        .right-container {
+            flex: 1;
+            width: 50%;
+            height: 100%;
+            background-color: #111111;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .category-menu {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background-color: #161616;
+            border-bottom: 1px solid #222;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+        .cat-btn {
+            background-color: #1A1A1A;
+            color: #FFF;
+            border: 1px solid #333;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .cat-btn:hover, .cat-btn.active {
+            background-color: #DB5304;
+            border-color: #DB5304;
+        }
+
+        .playlist-header {
+            padding: 10px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #888;
+            border-bottom: 1px solid #222;
+            flex-shrink: 0;
+        }
+
+        .playlist-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .song-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #1A1A1A;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .song-item:hover, .song-item.active {
+            background-color: #222;
+            border-color: #DB5304;
+        }
+        .song-thumb {
+            width: 100px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 12px;
+            background-color: #333;
+            flex-shrink: 0;
+        }
+        .song-info { flex: 1; overflow: hidden; }
+        .song-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #FFF;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .song-artist { font-size: 11px; color: #888; }
+
+        /* MODAL KÍCH HOẠT KEY BẢN QUYỀN */
+        .license-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .license-box {
+            background-color: #111111;
+            border: 2px solid #DB5304;
+            padding: 35px 30px;
+            border-radius: 14px;
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(219, 83, 4, 0.35);
+        }
+        .license-box h2 { color: #DB5304; margin-bottom: 12px; font-size: 24px; }
+        .license-box p { color: #AAAAAA; margin-bottom: 20px; font-size: 15px; }
+        .license-box input {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background-color: #1A1A1A;
+            color: #FFF;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .license-box button {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            background-color: #DB5304;
+            color: #FFF;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #license-msg { margin-top: 15px; font-weight: bold; font-size: 14px; min-height: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <h1>🎵 CarPlay YouTube No Ads</h1>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Tìm kiếm bài hát, ca sĩ..." onkeypress="if(event.key === 'Enter') searchMusic()">
+            <button class="mic-btn" onclick="startVoiceSearch()" title="Tìm kiếm bằng giọng nói">🎤</button>
+            <button onclick="searchMusic()">TÌM</button>
+        </div>
+        <button class="logout-btn" onclick="resetLicense()">ĐỔI MÃ KEY</button>
+    </div>
+
+    <!-- GIAO DIỆN CHIA ĐÔI MÀN HÌNH 50% - 50% -->
+    <div class="content-layout">
+        <!-- KHUNG TRÁI (50%): VIDEO PHÁT CHÍNH & NÚT PiP TÁCH KHUNG -->
+        <div class="video-container">
+            <div class="video-wrapper">
+                <video id="player" controls playsinline></video>
+            </div>
+            <div class="video-toolbar">
+                <div id="current-title">Vui lòng chọn bài hát từ danh sách bên phải</div>
+                <button class="pip-btn" onclick="togglePiP()" title="Thu nhỏ video nổi màn hình để mở Vietmap">🪟 Tách PiP</button>
+            </div>
+        </div>
+
+        <!-- KHUNG PHẢI (50%): MENU CHỦ ĐỀ & DANH SÁCH VIDEO THUMBNAIL -->
+        <div class="right-container">
+            <div class="category-menu">
+                {% for cat in categories %}
+                <button class="cat-btn {% if loop.first %}active{% endif %}" onclick="searchAndLoadPlaylist('{{ cat.searchKey }}', this)">
+                    {{ cat.title }}
+                </button>
+                {% endfor %}
+            </div>
+            
+            <div class="playlist-header">📂 Danh Sách Kết Quả (Bấm vào bài để chạy)</div>
+            
+            <div class="playlist-items" id="playlist">
+                <div style="padding:30px; color:#666; text-align:center;">Bấm vào một chủ đề ở trên hoặc tìm kiếm để hiện danh sách bài hát.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH NHẬP KEY BẢN QUYỀN -->
+    <div id="license-overlay" class="license-modal" style="display: none;">
+        <div class="license-box">
+            <h2>🔑 KÍCH HOẠT BẢN QUYỀN Ô TÔ</h2>
+            <p>Vui lòng nhập mã License Key được cấp để bắt đầu sử dụng ứng dụng trên xe:</p>
+            <input type="text" id="license-key-input" placeholder="VD: CAR-TEST-8888-9999" autocomplete="off">
+            <button onclick="submitLicenseKey()">XÁC THỰC KÍCH HOẠT</button>
+            <div id="license-msg"></div>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby_HLylDMlpHKUinLUiUWlaWlCuoIxOoqYIb0U46o9ZW0QXP4jzuEX4hcRbdU-NNqU/exec";
+
+        // 1. Phát video Full HD khi người dùng bấm vào bài hát
+        async function resolveAndPlay(videoId, title, element) {
+            document.getElementById('current-title').innerText = "Đang tải: " + title;
+            
+            if (element) {
+                document.querySelectorAll('.song-item').forEach(item => item.classList.remove('active'));
+                element.classList.add('active');
+            }
+
+            try {
+                const res = await fetch('/api/resolve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ video_id: videoId })
+                });
+                const data = await res.json();
+                
+                if (data.success && data.stream_url) {
+                    const videoPlayer = document.getElementById('player');
+                    videoPlayer.src = data.stream_url;
+                    videoPlayer.play();
+                    document.getElementById('current-title').innerText = "▶ Đang phát: " + (data.title || title);
+                } else {
+                    alert("Lỗi tải video: " + (data.error || "Không lấy được luồng stream"));
+                }
+            } catch (err) {
+                alert("Lỗi kết nối tới Backend Flask!");
+            }
+        }
+
+        // 2. Tính năng PiP (Picture-in-Picture) tách khung video ra cửa sổ nổi để dùng chung Vietmap
+        async function togglePiP() {
+            const videoPlayer = document.getElementById('player');
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else if (document.pictureInPictureEnabled) {
+                    await videoPlayer.requestPictureInPicture();
+                } else {
+                    alert("Trình duyệt hoặc thiết bị của bạn không hỗ trợ chế độ PiP nổi!");
+                }
+            } catch (err) {
+                console.error("Lỗi bật chế độ PiP:", err);
+            }
+        }
+
+        // 3. Tính năng Micro tìm kiếm bằng giọng nói (Web Speech API)
+        function startVoiceSearch() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Trình duyệt không hỗ trợ tìm kiếm bằng giọng nói trực tiếp!");
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'vi-VN';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            const searchInput = document.getElementById('search-input');
+            searchInput.placeholder = "Đang nghe giọng nói của bạn...";
+
+            recognition.onresult = (event) => {
+                const speechText = event.results[0][0].transcript;
+                searchInput.value = speechText;
+                searchMusic();
+            };
+
+            recognition.onerror = () => {
+                searchInput.placeholder = "Không nhận diện được giọng nói, thử lại!";
+            };
+
+            recognition.onend = () => {
+                searchInput.placeholder = "Tìm kiếm bài hát, ca sĩ...";
+            };
+
+            recognition.start();
+        }
+
+        // 4. Tìm kiếm và load danh sách thumbnail (Không auto play)
+        async function searchAndLoadPlaylist(query, element) {
+            if (!query) return;
+
+            if (element) {
+                document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+                element.classList.add('active');
+            }
+
+            const playlistDiv = document.getElementById('playlist');
+            playlistDiv.innerHTML = '<div style="padding:30px; color:#DB5304; text-align:center;">Đang tải danh sách từ YouTube...</div>';
+
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                
+                if (data.success && data.videos.length > 0) {
+                    playlistDiv.innerHTML = '';
+                    data.videos.forEach((video) => {
+                        const item = document.createElement('div');
+                        item.className = 'song-item';
+                        item.onclick = () => resolveAndPlay(video.id, video.title, item);
+                        item.innerHTML = `
+                            <img class="song-thumb" src="${video.thumbnail}" alt="thumb">
+                            <div class="song-info">
+                                <div class="song-title">${video.title}</div>
+                                <div class="song-artist">${video.uploaderName}</div>
+                            </div>
+                        `;
+                        playlistDiv.appendChild(item);
+                    });
+                } else {
+                    playlistDiv.innerHTML = '<div style="padding:30px; color:#FF5252; text-align:center;">Không tìm thấy bài hát phù hợp.</div>';
+                }
+            } catch (err) {
+                playlistDiv.innerHTML = '<div style="padding:30px; color:#FF5252; text-align:center;">Lỗi kết nối tìm kiếm.</div>';
+            }
+        }
+
+        function searchMusic() {
+            const query = document.getElementById('search-input').value.trim();
+            if (query) {
+                searchAndLoadPlaylist(query, null);
+            }
+        }
+
+        // 5. Quản lý Định danh phần cứng & Xác thực Key bản quyền qua localStorage[cite: 1]
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('app_device_id');
+            if (!deviceId) {
+                deviceId = 'CAR-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now();
+                localStorage.setItem('app_device_id', deviceId);
+            }
+            return deviceId;
+        }
+
+        async function checkExistingLicense() {
+            const savedKey = localStorage.getItem('app_license_key');
+            const deviceId = getDeviceId();
+            const overlay = document.getElementById('license-overlay');
+
+            if (!savedKey) {
+                overlay.style.display = 'flex';
+                return;
+            }
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ key: savedKey, device_id: deviceId })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    overlay.style.display = 'none';
+                    const firstCatBtn = document.querySelector('.cat-btn');
+                    if (firstCatBtn) firstCatBtn.click();
+                } else {
+                    localStorage.removeItem('app_license_key');
+                    overlay.style.display = 'flex';
+                }
+            } catch (err) {
+                overlay.style.display = 'none';
+            }
+        }
+
+        async function submitLicenseKey() {
+            const key = document.getElementById('license-key-input').value.trim();
+            const deviceId = getDeviceId();
+            const msgDiv = document.getElementById('license-msg');
+
+            if (!key) {
+                msgDiv.style.color = '#FF5252';
+                msgDiv.innerText = "Vui lòng nhập mã Key bản quyền!";
+                return;
+            }
+
+            msgDiv.style.color = '#AAAAAA';
+            msgDiv.innerText = "Đang kết nối đến máy chủ xác thực...";
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ key: key, device_id: deviceId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('app_license_key', key);
+                    msgDiv.style.color = '#4CAF50';
+                    msgDiv.innerText = "Kích hoạt thành công! Đang vào ứng dụng...";
+                    setTimeout(() => {
+                        document.getElementById('license-overlay').style.display = 'none';
+                        const firstCatBtn = document.querySelector('.cat-btn');
+                        if (firstCatBtn) firstCatBtn.click();
+                    }, 800);
+                } else {
+                    msgDiv.style.color = '#FF5252';
+                    msgDiv.innerText = data.message;
+                }
+            } catch (err) {
+                msgDiv.style.color = '#FF5252';
+                msgDiv.innerText = "Lỗi kết nối mạng! Vui lòng kiểm tra lại.";
+            }
+        }
+
+        function resetLicense() {
+            if (confirm("Bạn có chắc chắn muốn đổi mã Key bản quyền khác không?")) {
+                localStorage.removeItem('app_license_key');
+                location.reload();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkExistingLicense();
+        });
+    </script>
+</body>
+</html>
