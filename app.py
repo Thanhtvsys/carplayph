@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import yt_dlp
 import json
 import os
+import requests
 
 app = Flask(__name__)
 
@@ -44,7 +45,6 @@ def search_videos():
             for entry in info.get('entries', []):
                 vid = entry.get('id')
                 if vid:
-                    # Lấy thumbnail chuẩn từ YouTube ID
                     thumb = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
                     videos.append({
                         'id': vid,
@@ -67,31 +67,52 @@ def resolve_video():
     if not video_id:
         return jsonify({'success': False, 'error': 'Thiếu Video ID'}), 400
 
-    video_url = f"https://www.youtube.com/watch?v={video_id}"
+    # Danh sách các Invidious API instance công khai ổn định
+    instances = [
+        "https://invidious.privacyredirect.com",
+        "https://vid.priv.au",
+        "https://invidious.nerdworks.nl"
+    ]
     
-    # Cấu hình client tối ưu tránh bot check trên Render
-    ydl_opts = {
-        'format': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best[height<=1080]',
-        'quiet': True,
-        'no_warnings': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['mweb', 'android']
-            }
-        },
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
-        }
-    }
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-            return jsonify({
-                'success': True,
-                'title': info.get('title'),
-                'stream_url': info.get('url')
-            })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    stream_url = None
+    title = "YouTube Video"
+
+    for instance in instances:
+        try:
+            api_url = f"{instance}/api/v1/videos/{video_id}"
+            res = requests.get(api_url, timeout=5)
+            if res.status_code == 200:
+                vid_data = res.json()
+                title = vid_data.get('title', title)
+                
+                # Lấy link stream video từ Invidious
+                adaptive_streams = vid_data.get('adaptiveFormats', [])
+                for s in adaptive_streams:
+                    if s.get('type', '').startswith('video/mp4') and '1080' in str(s.get('qualityLabel', '')):
+                        stream_url = s.get('url')
+                        break
+                
+                if not stream_url and adaptive_streams:
+                    stream_url = adaptive_streams[0].get('url')
+                
+                if not stream_url:
+                    format_streams = vid_data.get('formatStreams', [])
+                    if format_streams:
+                        stream_url = format_streams[-1].get('url')
+
+                if stream_url:
+                    break
+        except Exception:
+            continue
+
+    if stream_url:
+        return jsonify({
+            'success': True,
+            'title': title,
+            'stream_url': stream_url
+        })
+    
+    return jsonify({'success': False, 'error': 'Không thể lấy luồng video qua Invidious API'}), 500
+
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
