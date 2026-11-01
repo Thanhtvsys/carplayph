@@ -70,11 +70,12 @@ def resolve_video():
     stream_url = None
     title = "YouTube Video"
 
-    # 1. Thử quét qua các Invidious instance
+# Danh sách Invidious instance công cộng hoạt động ổn định
     invidious_instances = [
         "https://invidious.privacyredirect.com",
         "https://vid.priv.au",
-        "https://invidious.nerdworks.nl"
+        "https://invidious.nerdvpn.de",
+        "https://invidious.protokolla.fi"
     ]
     
     for instance in invidious_instances:
