@@ -67,43 +67,61 @@ def resolve_video():
     if not video_id:
         return jsonify({'success': False, 'error': 'Thiếu Video ID'}), 400
 
-    # Danh sách các Invidious API instance công khai ổn định
-    instances = [
-        "https://invidious.privacyredirect.com",
-        "https://vid.priv.au",
-        "https://invidious.nerdworks.nl"
-    ]
-    
     stream_url = None
     title = "YouTube Video"
 
-    for instance in instances:
+    # 1. Thử lần lượt qua các Invidious instance
+    invidious_instances = [
+        "https://invidious.privacyredirect.com",
+        "https://vid.priv.au",
+        "https://invidious.nerdworks.nl",
+        "https://inv.nadeko.net"
+    ]
+    
+    for instance in invidious_instances:
         try:
             api_url = f"{instance}/api/v1/videos/{video_id}"
-            res = requests.get(api_url, timeout=5)
+            res = requests.get(api_url, timeout=4)
             if res.status_code == 200:
                 vid_data = res.json()
                 title = vid_data.get('title', title)
-                
-                # Lấy link stream video từ Invidious
                 adaptive_streams = vid_data.get('adaptiveFormats', [])
                 for s in adaptive_streams:
                     if s.get('type', '').startswith('video/mp4') and '1080' in str(s.get('qualityLabel', '')):
                         stream_url = s.get('url')
                         break
-                
                 if not stream_url and adaptive_streams:
                     stream_url = adaptive_streams[0].get('url')
-                
-                if not stream_url:
-                    format_streams = vid_data.get('formatStreams', [])
-                    if format_streams:
-                        stream_url = format_streams[-1].get('url')
-
                 if stream_url:
                     break
         except Exception:
             continue
+
+    # 2. Nếu Invidious không thành công, tự động chuyển sang dự phòng bằng Piped API
+    if not stream_url:
+        piped_instances = [
+            "https://pipedapi.kavin.rocks",
+            "https://pipedapi.projectsegfau.lt",
+            "https://pipedapi.ducks.party"
+        ]
+        for instance in piped_instances:
+            try:
+                api_url = f"{instance}/streams/{video_id}"
+                res = requests.get(api_url, timeout=4)
+                if res.status_code == 200:
+                    vid_data = res.json()
+                    title = vid_data.get('title', title)
+                    video_streams = vid_data.get('videoStreams', [])
+                    for s in video_streams:
+                        if s.get('quality') == '1080p' and s.get('url'):
+                            stream_url = s.get('url')
+                            break
+                    if not stream_url and video_streams:
+                        stream_url = video_streams[0].get('url')
+                    if stream_url:
+                        break
+            except Exception:
+                continue
 
     if stream_url:
         return jsonify({
@@ -112,7 +130,7 @@ def resolve_video():
             'stream_url': stream_url
         })
     
-    return jsonify({'success': False, 'error': 'Không thể lấy luồng video qua Invidious API'}), 500
+    return jsonify({'success': False, 'error': 'Không thể lấy luồng video qua các API trung gian'}), 500
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
