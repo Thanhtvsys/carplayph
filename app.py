@@ -3,6 +3,7 @@ import yt_dlp
 import json
 import os
 import requests
+import concurrent.futures
 
 app = Flask(__name__)
 
@@ -59,6 +60,22 @@ def search_videos():
 
     return jsonify({'success': False, 'videos': []})
 
+def fetch_from_instance(instance, video_id):
+    try:
+        api_url = f"{instance}/api/v1/videos/{video_id}"
+        res = requests.get(api_url, timeout=3) # Timeout nhanh để không bị treo
+        if res.status_code == 200:
+            vid_data = res.json()
+            title = vid_data.get('title', 'YouTube Video')
+            adaptive_streams = vid_data.get('adaptiveFormats', [])
+            # Ưu tiên lấy stream mp4 độ phân giải cao vừa phải để chạy mượt trên xe
+            for s in adaptive_streams:
+                if s.get('type', '').startswith('video/mp4') and 'url' in s:
+                    return {'title': title, 'stream_url': s.get('url')}
+    except Exception:
+        pass
+    return None
+
 @app.route('/api/resolve', methods=['POST'])
 def resolve_video():
     data = request.get_json() or {}
@@ -67,76 +84,37 @@ def resolve_video():
     if not video_id:
         return jsonify({'success': False, 'error': 'Thiếu Video ID'}), 400
 
-    stream_url = None
-    title = "YouTube Video"
-
-# Danh sách Invidious instance công cộng hoạt động ổn định
     invidious_instances = [
         "https://invidious.privacyredirect.com",
         "https://vid.priv.au",
         "https://invidious.nerdvpn.de",
         "https://invidious.protokolla.fi"
     ]
-    
-    for instance in invidious_instances:
-        try:
-            api_url = f"{instance}/api/v1/videos/{video_id}"
-            res = requests.get(api_url, timeout=3)
-            if res.status_code == 200:
-                vid_data = res.json()
-                title = vid_data.get('title', title)
-                adaptive_streams = vid_data.get('adaptiveFormats', [])
-                for s in adaptive_streams:
-                    if s.get('type', '').startswith('video/mp4') and '1080' in str(s.get('qualityLabel', '')):
-                        stream_url = s.get('url')
-                        break
-                if not stream_url and adaptive_streams:
-                    stream_url = adaptive_streams[0].get('url')
-                if stream_url:
-                    break
-        except Exception:
-            continue
 
-    # 2. Dự phòng bằng Piped API
-    if not stream_url:
-        piped_instances = [
-            "https://pipedapi.kavin.rocks",
-            "https://pipedapi.projectsegfau.lt"
-        ]
-        for instance in piped_instances:
-            try:
-                api_url = f"{instance}/streams/{video_id}"
-                res = requests.get(api_url, timeout=3)
-                if res.status_code == 200:
-                    vid_data = res.json()
-                    title = vid_data.get('title', title)
-                    video_streams = vid_data.get('videoStreams', [])
-                    for s in video_streams:
-                        if s.get('quality') == '1080p' and s.get('url'):
-                            stream_url = s.get('url')
-                            break
-                    if not stream_url and video_streams:
-                        stream_url = video_streams[0].get('url')
-                    if stream_url:
-                        break
-            except Exception:
-                continue
+    result_data = None
+    # Gọi đồng thời các server để lấy kết quả nhanh nhất (bỏ qua server chậm)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(fetch_from_instance, inst, video_id) for inst in invidious_instances]
+        for future in concurrent.futures.as_completed(futures):
+            res = future.result()
+            if res:
+                result_data = res
+                break
 
-    # 3. Phương án dự phòng cuối cùng: Trả về link trực tiếp trang nhúng YouTube nếu các API đều nghẽn
-    if not stream_url:
-        # Sử dụng link embed chính hãng để giao diện web tự động hiển thị iframe phát video mượt mà không lo chết API
+    if result_data and result_data.get('stream_url'):
         return jsonify({
             'success': True,
-            'is_embed': True,
-            'title': title,
-            'stream_url': f"https://www.youtube.com/embed/{video_id}?autoplay=1&enablejsapi=1"
+            'is_embed': False,
+            'title': result_data['title'],
+            'stream_url': result_data['stream_url']
         })
-
+    
+    # Fallback dự phòng cuối cùng nếu quét instances mất kết nối
     return jsonify({
         'success': True,
-        'is_embed': False,
-        'title': title,
-        'stream_url': stream_url
+        'is_embed': True,
+        'title': 'YouTube Stream',
+        'stream_url': f"https://www.youtube.com/embed/{video_id}?autoplay=1&enablejsapi=1"
     })
 
 if __name__ == '__main__':
