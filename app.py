@@ -69,15 +69,18 @@ def resolve_video():
 
     video_url = f"https://www.youtube.com/watch?v={video_id}"
     
-    # Đã cập nhật player_client để vượt qua lỗi chặn bot của YouTube trên Cloud/Render
+    # Cấu hình client tối ưu tránh bot check trên Render
     ydl_opts = {
         'format': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best[height<=1080]',
         'quiet': True,
         'no_warnings': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['tv_embedded', 'mweb', 'ios']
+                'player_client': ['mweb', 'android']
             }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
         }
     }
     try:
@@ -90,6 +93,5 @@ def resolve_video():
             })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
-
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
