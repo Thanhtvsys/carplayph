@@ -60,18 +60,44 @@ def search_videos():
 
     return jsonify({'success': False, 'videos': []})
 
-def fetch_from_instance(instance, video_id):
+def fetch_from_invidious(instance, video_id):
     try:
         api_url = f"{instance}/api/v1/videos/{video_id}"
-        res = requests.get(api_url, timeout=3) # Timeout nhanh để không bị treo
+        res = requests.get(api_url, timeout=2.5)
         if res.status_code == 200:
             vid_data = res.json()
             title = vid_data.get('title', 'YouTube Video')
             adaptive_streams = vid_data.get('adaptiveFormats', [])
-            # Ưu tiên lấy stream mp4 độ phân giải cao vừa phải để chạy mượt trên xe
+            stream_url = None
             for s in adaptive_streams:
-                if s.get('type', '').startswith('video/mp4') and 'url' in s:
-                    return {'title': title, 'stream_url': s.get('url')}
+                if s.get('type', '').startswith('video/mp4') and '1080' in str(s.get('qualityLabel', '')):
+                    stream_url = s.get('url')
+                    break
+            if not stream_url and adaptive_streams:
+                stream_url = adaptive_streams[0].get('url')
+            if stream_url:
+                return {'title': title, 'stream_url': stream_url}
+    except Exception:
+        pass
+    return None
+
+def fetch_from_piped(instance, video_id):
+    try:
+        api_url = f"{instance}/streams/{video_id}"
+        res = requests.get(api_url, timeout=2.5)
+        if res.status_code == 200:
+            vid_data = res.json()
+            title = vid_data.get('title', 'YouTube Video')
+            video_streams = vid_data.get('videoStreams', [])
+            stream_url = None
+            for s in video_streams:
+                if s.get('quality') == '1080p' and s.get('url'):
+                    stream_url = s.get('url')
+                    break
+            if not stream_url and video_streams:
+                stream_url = video_streams[0].get('url')
+            if stream_url:
+                return {'title': title, 'stream_url': stream_url}
     except Exception:
         pass
     return None
@@ -90,11 +116,22 @@ def resolve_video():
         "https://invidious.nerdvpn.de",
         "https://invidious.protokolla.fi"
     ]
+    
+    piped_instances = [
+        "https://pipedapi.kavin.rocks",
+        "https://pipedapi.projectsegfau.lt"
+    ]
 
     result_data = None
-    # Gọi đồng thời các server để lấy kết quả nhanh nhất (bỏ qua server chậm)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [executor.submit(fetch_from_instance, inst, video_id) for inst in invidious_instances]
+
+    # Quét đồng thời các Invidious và Piped instance để lấy link siêu tốc
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+        futures = []
+        for inst in invidious_instances:
+            futures.append(executor.submit(fetch_from_invidious, inst, video_id))
+        for inst in piped_instances:
+            futures.append(executor.submit(fetch_from_piped, inst, video_id))
+            
         for future in concurrent.futures.as_completed(futures):
             res = future.result()
             if res:
@@ -109,7 +146,7 @@ def resolve_video():
             'stream_url': result_data['stream_url']
         })
     
-    # Fallback dự phòng cuối cùng nếu quét instances mất kết nối
+    # Dự phòng cuối cùng bằng Embed chính hãng nếu các API bận
     return jsonify({
         'success': True,
         'is_embed': True,
