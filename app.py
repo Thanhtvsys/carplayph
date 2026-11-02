@@ -28,6 +28,10 @@ def search_videos():
     if not query:
         return jsonify({'success': False, 'videos': []})
 
+    # Nếu là danh mục Yêu Thích cá nhân hóa (xử lý trực tiếp phía client qua localStorage)
+    if query == "FAVORITES_CUSTOM":
+        return jsonify({'success': True, 'videos': []})
+
     ydl_opts = {
         'extract_flat': True,
         'no_warnings': True,
@@ -124,7 +128,6 @@ def resolve_video():
 
     result_data = None
 
-    # Quét đồng thời các Invidious và Piped instance để lấy link siêu tốc
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         futures = []
         for inst in invidious_instances:
@@ -146,7 +149,6 @@ def resolve_video():
             'stream_url': result_data['stream_url']
         })
     
-    # Dự phòng cuối cùng bằng Embed chính hãng nếu các API bận
     return jsonify({
         'success': True,
         'is_embed': True,
