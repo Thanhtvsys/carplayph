@@ -528,42 +528,34 @@
             slider.scrollBy({ left: direction * 220, behavior: 'smooth' });
         }
 
-        // HÀM PHÓNG TO VÀ THU NHỎ VIDEO AN TOÀN (KHÔNG BỊ TRÀN WEB)
+        // HÀM PHÓNG TO / THU NHỎ VIDEO AN TOÀN KHÔNG BỊ TRÀN GIAO DIỆN WEB
         function toggleFullScreen() {
             const videoWrapper = document.getElementById('player-wrapper');
             const videoPlayer = document.getElementById('player');
-            const targetElement = videoPlayer || videoWrapper;
+            const target = videoPlayer || videoWrapper;
 
-            const isInFullscreen = document.fullscreenElement || 
-                                   document.webkitFullscreenElement || 
-                                   document.webkitPresentationMode === 'picture-in-picture';
+            if (!target) return;
 
-            if (!isInFullscreen) {
-                if (videoPlayer && typeof videoPlayer.webkitEnterFullscreen === "function") {
-                    try {
-                        videoPlayer.webkitEnterFullscreen();
-                    } catch (e) {
-                        requestFull(targetElement);
-                    }
-                } else {
-                    requestFull(targetElement);
+            const isFullscreen = document.fullscreenElement || 
+                                 document.webkitFullscreenElement || 
+                                 document.msFullscreenElement;
+
+            if (!isFullscreen) {
+                if (target.requestFullscreen) {
+                    target.requestFullscreen().catch(err => console.log(err));
+                } else if (target.webkitRequestFullscreen) {
+                    target.webkitRequestFullscreen();
+                } else if (target.webkitEnterFullscreen) {
+                    target.webkitEnterFullscreen();
                 }
             } else {
                 if (document.exitFullscreen) {
-                    document.exitFullscreen();
+                    document.exitFullscreen().catch(err => console.log(err));
                 } else if (document.webkitExitFullscreen) {
                     document.webkitExitFullscreen();
-                } else if (videoPlayer && typeof videoPlayer.webkitExitFullscreen === "function") {
-                    videoPlayer.webkitExitFullscreen();
+                } else if (target.webkitExitFullscreen) {
+                    target.webkitExitFullscreen();
                 }
-            }
-        }
-
-        function requestFull(element) {
-            if (element.requestFullscreen) {
-                element.requestFullscreen().catch(err => console.log(err));
-            } else if (element.webkitRequestFullscreen) {
-                element.webkitRequestFullscreen();
             }
         }
 
@@ -666,15 +658,23 @@
             } catch (err) {}
         }
 
-        // BẤM MIC: TỰ ĐỘNG DỪNG NHẠC NGAY LẬP TỨC ĐỂ THU ÂM GIỌNG NÓI
+        // HÀM BẤM MIC: DỪNG NHẠC NGAY LẬP TỨC ĐỂ THU ÂM GIỌNG NÓI CHUẨN XÁC
         function startVoiceSearch() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return;
+            if (!SpeechRecognition) {
+                alert("Trình duyệt không hỗ trợ nhận diện giọng nói!");
+                return;
+            }
 
+            // Ép dừng nhạc ngay khoảnh khắc bấm nút Micro
             const player = document.getElementById('player');
-            if (player && !player.paused) {
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            
+            if (player) {
                 player.pause();
-                document.getElementById('play-pause-btn').innerText = "▶ Phát";
+                if (playPauseBtn) {
+                    playPauseBtn.innerText = "▶ Phát";
+                }
             }
 
             const micBtn = document.getElementById('mic-button');
@@ -687,7 +687,7 @@
 
             recognition.onstart = () => {
                 micBtn.classList.add('listening');
-                searchInput.placeholder = "Đang nghe giọng nói...";
+                searchInput.placeholder = "Đang nghe giọng nói của bạn...";
             };
 
             recognition.onresult = (event) => {
