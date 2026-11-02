@@ -234,7 +234,6 @@
         }
         .cat-nav-btn:active { background-color: #DB5304; color: #FFF; }
 
-        /* THANH MENU CUỘN NGANG DẠNG SCROLL MƯỢT */
         .category-menu {
             display: flex;
             gap: 10px;
@@ -242,20 +241,19 @@
             overflow-x: auto;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Ẩn scrollbar trên Firefox */
+            scrollbar-width: none;
             flex: 1;
             cursor: grab;
         }
-        .category-menu::-webkit-scrollbar { display: none; } /* Ẩn scrollbar trên Chrome/Safari */
+        .category-menu::-webkit-scrollbar { display: none; }
         
-        /* PHÓNG TO NÚT CHỦ ĐỀ ĐỂ DỄ ĐỌC VÀ DỄ BẤM */
         .cat-btn {
             background-color: #242424;
             color: #DDD;
             border: 1px solid #383838;
             padding: 10px 20px;
             border-radius: 24px;
-            font-size: 15px; /* Chữ to rõ ràng */
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             white-space: nowrap;
@@ -325,7 +323,6 @@
         }
         .song-artist { font-size: 11px; color: #888; }
 
-        /* MODAL KÍCH HOẠT KEY BẢN QUYỀN VIP */
         .license-modal {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -399,13 +396,12 @@
                 <div id="current-title">Vui lòng chọn bài hát từ danh sách</div>
                 <div class="action-buttons">
                     <button class="ctrl-btn" onclick="togglePiP()" title="Thu nhỏ nổi màn hình">🪟 PiP</button>
-                    <button class="ctrl-btn ctrl-btn-fs" onclick="toggleFullScreen()" title="Phóng to màn hình">⛶ Phóng to</button>
+                    <button class="ctrl-btn ctrl-btn-fs" onclick="toggleFullScreen()" title="Phóng to video">⛶ Phóng to</button>
                 </div>
             </div>
         </div>
 
         <div class="right-container">
-            <!-- Thanh menu chủ đề to, hỗ trợ kéo trượt ngang mượt mà -->
             <div class="category-wrapper">
                 <button class="cat-nav-btn" onclick="scrollCategory(-1)">◀</button>
                 <div class="category-menu" id="category-menu-bar">
@@ -439,7 +435,6 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby_HLylDMlpHKUinLUiUWlaWlCuoIxOoqYIb0U46o9ZW0QXP4jzuEX4hcRbdU-NNqU/exec";
 
-        // Thêm tính năng hỗ trợ kéo trượt ngang bằng chuột/cảm ứng (Drag-to-scroll) mượt mà như cuộn lăn
         const slider = document.getElementById('category-menu-bar');
         let isDown = false;
         let startX, scrollLeft;
@@ -462,7 +457,7 @@
             if(!isDown) return;
             e.preventDefault();
             const x = e.pageX - slider.offsetLeft;
-            const walk = (x - startX) * 2; // Tốc độ kéo
+            const walk = (x - startX) * 2;
             slider.scrollLeft = scrollLeft - walk;
         });
 
@@ -470,19 +465,31 @@
             slider.scrollBy({ left: direction * 220, behavior: 'smooth' });
         }
 
+        // HÀM PHÓNG TO TRỰC TIẾP CHỈ THẺ VIDEO (GỒM CẢ SAFARI IOS / CARPLAY)
         function toggleFullScreen() {
-            const wrapper = document.getElementById('player-wrapper');
-            if (!document.fullscreenElement) {
-                if (wrapper.requestFullscreen) {
-                    wrapper.requestFullscreen();
-                } else if (wrapper.webkitRequestFullscreen) {
-                    wrapper.webkitRequestFullscreen();
+            const videoPlayer = document.querySelector('video') || document.querySelector('iframe');
+            
+            if (!videoPlayer) {
+                alert("Vui lòng chọn bài hát trước khi bật phóng to!");
+                return;
+            }
+
+            if (videoPlayer.tagName === 'VIDEO') {
+                // Tương thích chuẩn WebKit iOS/Safari trên iPhone & CarPlay
+                if (videoPlayer.webkitEnterFullscreen) {
+                    videoPlayer.webkitEnterFullscreen();
+                } 
+                // Tương thích chuẩn Fullscreen API tiêu chuẩn (Android/Chrome/Edge)
+                else if (videoPlayer.requestFullscreen) {
+                    videoPlayer.requestFullscreen();
+                } else if (videoPlayer.webkitRequestFullscreen) {
+                    videoPlayer.webkitRequestFullscreen();
                 }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
+            } else if (videoPlayer.tagName === 'IFRAME') {
+                if (videoPlayer.requestFullscreen) {
+                    videoPlayer.requestFullscreen();
+                } else if (videoPlayer.webkitRequestFullscreen) {
+                    videoPlayer.webkitRequestFullscreen();
                 }
             }
         }
@@ -683,7 +690,7 @@
             const msgDiv = document.getElementById('license-msg');
 
             if (!key) {
-                msgDiv.style.style = 'color: #FF5252;';
+                msgDiv.style.color = '#FF5252';
                 msgDiv.innerText = "Vui lòng nhập mã Key bản quyền!";
                 return;
             }
