@@ -17,43 +17,43 @@
             position: fixed;
         }
 
-        /* THANH HEADER ĐỈNH MÀN HÌNH */
+        /* THANH HEADER ĐỈNH MÀN HÌNH (Làm cao hơn để chứa cụm tìm kiếm phóng to gấp đôi) */
         .header-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 16px;
+            padding: 14px 20px;
             background-color: #121212;
             border-bottom: 1px solid #222;
-            gap: 12px;
-            height: 72px;
+            gap: 16px;
+            height: 96px;
             flex-shrink: 0;
         }
         .header-bar h1 {
             color: #DB5304;
-            font-size: 17px;
+            font-size: 19px;
             font-weight: 800;
             white-space: nowrap;
             letter-spacing: 0.5px;
         }
         
-        /* KHUNG TÌM KIẾM TO BỰ, DỄ BẤM */
+        /* KHUNG TÌM KIẾM PHÓNG TO GẤP ĐÔI */
         .search-box {
             display: flex;
-            gap: 12px;
+            gap: 16px;
             flex: 1;
-            max-width: 600px;
+            max-width: 760px;
             align-items: center;
         }
         .search-box input {
             background-color: #1E1E1E;
-            border: 2px solid #333;
+            border: 3px solid #333;
             color: #FFF;
-            padding: 12px 18px;
-            border-radius: 14px;
+            padding: 16px 24px;
+            border-radius: 16px;
             outline: none;
             width: 100%;
-            font-size: 17px;
+            font-size: 20px; /* Chữ to gấp đôi */
             transition: all 0.2s;
         }
         .search-box input:focus {
@@ -64,12 +64,12 @@
             background-color: #DB5304;
             color: #FFF;
             border: none;
-            padding: 0 24px;
-            height: 50px;
-            border-radius: 14px;
+            padding: 0 28px;
+            height: 60px; /* Nút tìm to gấp đôi */
+            border-radius: 16px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             white-space: nowrap;
             display: flex;
             align-items: center;
@@ -80,14 +80,16 @@
             transform: scale(0.95);
             background-color: #B54202;
         }
-        /* PHÓNG TO NÚT MIC GẤP ĐÔI */
+        /* NÚT MIC TO GẤP ĐÔI NỔI BẬT */
         .mic-btn {
             background-color: #1F1F1F;
-            border: 2px solid #DB5304;
+            border: 3px solid #DB5304;
             color: #DB5304;
-            font-size: 28px;
-            padding: 0 22px;
-            min-width: 60px;
+            font-size: 32px;
+            padding: 0 26px;
+            min-width: 72px;
+            height: 60px;
+            border-radius: 16px;
         }
         .mic-btn.listening {
             background-color: #DB5304;
@@ -96,7 +98,7 @@
         }
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(219, 83, 4, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(219, 83, 4, 0); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 14px rgba(219, 83, 4, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(219, 83, 4, 0); }
         }
 
@@ -104,11 +106,11 @@
             background-color: #1A1A1A;
             color: #888;
             border: 1px solid #333;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             white-space: nowrap;
         }
         .logout-btn:active { color: #FFF; border-color: #666; }
@@ -118,14 +120,14 @@
             display: flex;
             flex: 1;
             width: 100vw;
-            height: calc(100vh - 72px);
+            height: calc(100vh - 96px);
             overflow: hidden;
         }
 
         @media (max-width: 768px) {
             .content-layout { flex-direction: column; }
-            .video-container { width: 100% !important; height: 48% !important; border-right: none !important; border-bottom: 2px solid #222; padding: 6px !important; }
-            .right-container { width: 100% !important; height: 52% !important; }
+            .video-container { width: 100% !important; height: 50% !important; border-right: none !important; border-bottom: 2px solid #222; padding: 6px !important; }
+            .right-container { width: 100% !important; height: 50% !important; }
             .header-bar h1 { display: none; }
         }
 
@@ -139,16 +141,16 @@
             justify-content: center;
             align-items: center;
             background-color: #050505;
-            padding: 10px;
+            padding: 12px;
             border-right: 1px solid #222;
         }
         .video-wrapper {
             width: 100%;
             height: 100%;
-            max-height: 72%;
+            max-height: 68%;
             aspect-ratio: 16/9;
             background-color: #000;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
             border: 1px solid #2A2A2A;
             box-shadow: 0 6px 20px rgba(0,0,0,0.7);
@@ -168,11 +170,11 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            margin-top: 6px;
-            gap: 6px;
+            margin-top: 8px;
+            gap: 8px;
         }
         #current-title {
-            font-size: 13px;
+            font-size: 14px;
             color: #DB5304;
             font-weight: 700;
             overflow: hidden;
@@ -182,21 +184,21 @@
         }
         .action-buttons {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             flex-wrap: nowrap;
         }
         .ctrl-btn {
             background-color: #1C1C1E;
             color: #FFF;
             border: 1px solid #333;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             transition: all 0.15s;
             white-space: nowrap;
         }
@@ -205,53 +207,53 @@
             background-color: #DB5304;
             border-color: #DB5304;
         }
-        /* PHÓNG TO NÚT ❤️ THÍCH GẤP ĐÔI NỔI BẬT */
+        /* NÚT ❤️ THÍCH PHÓNG TO GẤP ĐÔI */
         .ctrl-btn-fav {
             background-color: #2E1100;
             border: 2px solid #DB5304;
             color: #DB5304;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 800;
-            padding: 8px 16px;
+            padding: 10px 20px;
         }
         .ctrl-btn-fs {
             background-color: #DB5304;
             color: #FFF;
-            border: 1px solid #DB5304;
+            border: 2px solid #DB5304;
         }
 
-        /* THANH ĐIỀU KHIỂN MEDIA (TRƯỚC, DỪNG/PHÁT, SAU) */
+        /* THANH ĐIỀU KHIỂN MEDIA PHÓNG TO GẤP ĐÔI */
         .media-control-bar {
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
-            margin-top: 6px;
-            gap: 12px;
+            margin-top: 10px;
+            gap: 16px;
             background: #141414;
-            padding: 8px 14px;
-            border-radius: 12px;
+            padding: 12px 18px;
+            border-radius: 14px;
             border: 1px solid #222;
         }
         .media-btn {
             background-color: #222;
             color: #FFF;
-            border: 1px solid #333;
-            padding: 8px 18px;
-            border-radius: 10px;
-            font-size: 13px;
+            border: 2px solid #333;
+            padding: 12px 28px; /* Tăng kích thước nút to gấp đôi */
+            border-radius: 12px;
+            font-size: 16px; /* Chữ to rõ */
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
         .media-btn:active { background-color: #DB5304; border-color: #DB5304; transform: scale(0.95); }
         .media-btn-main {
             background-color: #DB5304;
             border-color: #DB5304;
-            font-size: 15px;
-            padding: 8px 24px;
+            font-size: 18px;
+            padding: 12px 36px;
         }
 
         /* KHUNG PHẢI: MENU CHỦ ĐỀ & PLAYLIST */
@@ -269,18 +271,18 @@
             align-items: center;
             background-color: #181818;
             border-bottom: 1px solid #222;
-            padding: 8px 10px;
-            gap: 8px;
+            padding: 10px 12px;
+            gap: 10px;
             flex-shrink: 0;
         }
         .cat-nav-btn {
             background-color: #222;
             color: #DB5304;
             border: 1px solid #333;
-            width: 40px;
-            height: 42px;
-            border-radius: 10px;
-            font-size: 16px;
+            width: 44px;
+            height: 46px;
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -292,8 +294,8 @@
 
         .category-menu {
             display: flex;
-            gap: 10px;
-            padding: 4px;
+            gap: 12px;
+            padding: 6px;
             overflow-x: auto;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
@@ -307,9 +309,9 @@
             background-color: #242424;
             color: #DDD;
             border: 1px solid #383838;
-            padding: 10px 20px;
-            border-radius: 24px;
-            font-size: 15px;
+            padding: 12px 22px;
+            border-radius: 26px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             white-space: nowrap;
@@ -324,8 +326,8 @@
         }
 
         .playlist-header {
-            padding: 8px 14px;
-            font-size: 11px;
+            padding: 10px 16px;
+            font-size: 12px;
             font-weight: 700;
             color: #777;
             text-transform: uppercase;
@@ -337,16 +339,16 @@
         .playlist-items {
             flex: 1;
             overflow-y: auto;
-            padding: 8px;
+            padding: 10px;
             -webkit-overflow-scrolling: touch;
         }
         .song-item {
             display: flex;
             align-items: center;
-            padding: 8px 10px;
-            margin-bottom: 6px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
             background-color: #1A1A1A;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             border: 1px solid #262626;
             transition: all 0.15s;
@@ -357,27 +359,27 @@
             transform: scale(0.99);
         }
         .song-thumb {
-            width: 88px;
-            height: 50px;
+            width: 100px;
+            height: 56px;
             object-fit: cover;
-            border-radius: 6px;
-            margin-right: 10px;
+            border-radius: 8px;
+            margin-right: 12px;
             background-color: #000;
             flex-shrink: 0;
         }
         .song-info { flex: 1; overflow: hidden; }
         .song-title {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             color: #EEE;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             line-height: 1.3;
         }
-        .song-artist { font-size: 11px; color: #888; }
+        .song-artist { font-size: 12px; color: #888; }
 
         .license-modal {
             position: fixed;
@@ -393,42 +395,42 @@
         .license-box {
             background-color: #141414;
             border: 2px solid #DB5304;
-            padding: 28px 24px;
-            border-radius: 14px;
+            padding: 32px 28px;
+            border-radius: 16px;
             width: 90%;
-            max-width: 420px;
+            max-width: 440px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(219, 83, 4, 0.3);
         }
-        .license-box h2 { color: #DB5304; margin-bottom: 8px; font-size: 20px; font-weight: 800; }
-        .license-box p { color: #AAA; margin-bottom: 16px; font-size: 13px; line-height: 1.4; }
+        .license-box h2 { color: #DB5304; margin-bottom: 10px; font-size: 22px; font-weight: 800; }
+        .license-box p { color: #AAA; margin-bottom: 18px; font-size: 14px; line-height: 1.4; }
         .license-box input {
             width: 100%;
-            padding: 12px;
-            font-size: 15px;
-            border-radius: 8px;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 10px;
             border: 1px solid #333;
             background-color: #222;
             color: #FFF;
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             outline: none;
         }
         .license-box input:focus { border-color: #DB5304; }
         .license-box button {
             width: 100%;
-            padding: 12px;
-            font-size: 14px;
+            padding: 14px;
+            font-size: 15px;
             background-color: #DB5304;
             color: #FFF;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.2s;
         }
         .license-box button:active { background-color: #B54202; }
-        #license-msg { margin-top: 12px; font-weight: 600; font-size: 12px; min-height: 18px; }
+        #license-msg { margin-top: 14px; font-weight: 600; font-size: 13px; min-height: 20px; }
     </style>
 </head>
 <body>
@@ -458,7 +460,7 @@
                 </div>
             </div>
 
-            <!-- THANH ĐIỀU KHIỂN MEDIA TRÊN MÀN HÌNH CARPLAY (TRƯỚC, DỪNG/PHÁT, SAU) -->
+            <!-- THANH ĐIỀU KHIỂN MEDIA PHÓNG TO GẤP ĐÔI (TRƯỚC, DỪNG/PHÁT, SAU) -->
             <div class="media-control-bar">
                 <button class="media-btn" onclick="playPrevSong()" title="Bài trước">⏮ Bài Trước</button>
                 <button class="media-btn media-btn-main" id="play-pause-btn" onclick="togglePlayPause()" title="Dừng / Phát">⏸ Dừng</button>
@@ -482,7 +484,7 @@
             <div class="playlist-header">📂 Danh Sách Kết Quả</div>
             
             <div class="playlist-items" id="playlist">
-                <div style="padding:30px 20px; color:#666; text-align:center; font-size:12px;">Bấm vào một chủ đề ở trên hoặc tìm kiếm để chọn bài phát.</div>
+                <div style="padding:30px 20px; color:#666; text-align:center; font-size:13px;">Bấm vào một chủ đề ở trên hoặc tìm kiếm để chọn bài phát.</div>
             </div>
         </div>
     </div>
@@ -529,10 +531,7 @@
 
         function toggleFullScreen() {
             const videoPlayer = document.querySelector('video') || document.querySelector('iframe');
-            if (!videoPlayer) {
-                alert("Vui lòng chọn bài hát trước khi bật phóng to!");
-                return;
-            }
+            if (!videoPlayer) return;
             if (videoPlayer.tagName === 'VIDEO') {
                 if (videoPlayer.webkitEnterFullscreen) {
                     videoPlayer.webkitEnterFullscreen();
@@ -586,15 +585,12 @@
                         newVideo.play().catch(e => console.log("Auto-play blocked:", e));
                         document.getElementById('current-title').innerText = "▶ Đang phát trực tiếp: " + data.title;
                     }
-                } else {
-                    alert("Không lấy được luồng phát trực tiếp.");
                 }
             } catch (err) {
-                alert("Lỗi kết nối máy chủ Flask!");
+                console.log("Lỗi kết nối máy chủ Flask!");
             }
         }
 
-        // HÀM ĐIỀU KHIỂN MEDIA (DỪNG/PHÁT, BÀI TRƯỚC/SAU)
         function togglePlayPause() {
             const player = document.getElementById('player');
             const btn = document.getElementById('play-pause-btn');
@@ -628,27 +624,19 @@
             }
         }
 
+        // BỎ HOÀN TOÀN CÁC THÔNG BÁO ALERT KHI BẤM THÍCH
         function saveCurrentFavorite() {
-            if (!currentPlayingVideo) {
-                alert("Vui lòng chọn phát một bài hát trước khi thêm vào yêu thích!");
-                return;
-            }
+            if (!currentPlayingVideo) return;
             let favorites = JSON.parse(localStorage.getItem('my_carplay_favorites') || '[]');
             if (!favorites.some(v => v.id === currentPlayingVideo.id)) {
                 favorites.push(currentPlayingVideo);
                 localStorage.setItem('my_carplay_favorites', JSON.stringify(favorites));
-                alert("❤️ Đã thêm bài hát vào danh mục Yêu Thích!");
-            } else {
-                alert("Bài hát này đã có sẵn trong danh sách Yêu Thích rồi!");
             }
         }
 
         async function togglePiP() {
             const videoPlayer = document.getElementById('player');
-            if (!videoPlayer || videoPlayer.tagName !== 'VIDEO') {
-                alert("Chế độ PiP chỉ hỗ trợ khi phát luồng video trực tiếp!");
-                return;
-            }
+            if (!videoPlayer || videoPlayer.tagName !== 'VIDEO') return;
             try {
                 if (videoPlayer.paused) await videoPlayer.play().catch(e => {});
                 if (typeof videoPlayer.webkitSetPresentationMode === "function") {
@@ -657,19 +645,15 @@
                     if (document.pictureInPictureElement) await document.exitPictureInPicture();
                     else await videoPlayer.requestPictureInPicture();
                 }
-            } catch (err) {
-                alert("Không thể bật cửa sổ nổi PiP lúc này.");
-            }
+            } catch (err) {}
         }
 
-        // TỰ ĐỘNG TẠM DỪNG NHẠC KHI BẤM MIC ĐỂ THU ÂM RÕ HƠN
+        // KHI BẤM MIC: TỰ ĐỘNG DỪNG NHẠC NGAY LẬP TỨC ĐỂ THU ÂM GIỌNG NÓI
         function startVoiceSearch() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("Trình duyệt không hỗ trợ nhận diện giọng nói!");
-                return;
-            }
+            if (!SpeechRecognition) return;
 
+            // Dừng nhạc ngay lập tức khi bấm nút Mic
             const player = document.getElementById('player');
             if (player && !player.paused) {
                 player.pause();
@@ -686,7 +670,7 @@
 
             recognition.onstart = () => {
                 micBtn.classList.add('listening');
-                searchInput.placeholder = "Đang nghe giọng nói của bạn...";
+                searchInput.placeholder = "Đang nghe giọng nói...";
             };
 
             recognition.onresult = (event) => {
@@ -722,7 +706,7 @@
                 currentPlaylistArray = favorites;
                 
                 if (favorites.length === 0) {
-                    playlistDiv.innerHTML = '<div style="padding:40px 20px; color:#888; text-align:center; font-size:13px; line-height: 1.5;">Danh sách Yêu Thích đang trống.<br>Hãy nghe bài nào hay và bấm nút <b>❤️ Thích</b> để lưu vào đây nhé!</div>';
+                    playlistDiv.innerHTML = '<div style="padding:40px 20px; color:#888; text-align:center; font-size:14px; line-height: 1.5;">Danh sách Yêu Thích đang trống.<br>Hãy nghe bài nào hay và bấm nút <b>❤️ Thích</b> để lưu vào đây nhé!</div>';
                     return;
                 }
 
@@ -743,7 +727,7 @@
                 return;
             }
 
-            playlistDiv.innerHTML = '<div style="padding:20px; color:#DB5304; text-align:center; font-size:12px;">Đang tải danh sách...</div>';
+            playlistDiv.innerHTML = '<div style="padding:20px; color:#DB5304; text-align:center; font-size:13px;">Đang tải danh sách...</div>';
 
             try {
                 const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
@@ -766,10 +750,10 @@
                         playlistDiv.appendChild(item);
                     });
                 } else {
-                    playlistDiv.innerHTML = '<div style="padding:20px; color:#FF5252; text-align:center; font-size:12px;">Không tìm thấy bài hát.</div>';
+                    playlistDiv.innerHTML = '<div style="padding:20px; color:#FF5252; text-align:center; font-size:13px;">Không tìm thấy bài hát.</div>';
                 }
             } catch (err) {
-                playlistDiv.innerHTML = '<div style="padding:20px; color:#FF5252; text-align:center; font-size:12px;">Lỗi kết nối tìm kiếm.</div>';
+                playlistDiv.innerHTML = '<div style="padding:20px; color:#FF5252; text-align:center; font-size:13px;">Lỗi kết nối tìm kiếm.</div>';
             }
         }
 
