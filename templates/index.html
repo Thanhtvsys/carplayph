@@ -37,7 +37,7 @@
             letter-spacing: 0.5px;
         }
         
-        /* KHUNG TÌM KIẾM BỰ */
+        /* KHUNG TÌM KIẾM BỰ & DỄ BẤM */
         .search-box {
             display: flex;
             gap: 10px;
@@ -395,6 +395,7 @@
             <div class="video-toolbar">
                 <div id="current-title">Vui lòng chọn bài hát từ danh sách</div>
                 <div class="action-buttons">
+                    <button class="ctrl-btn" onclick="saveCurrentFavorite()" title="Lưu yêu thích">❤️ Thích</button>
                     <button class="ctrl-btn" onclick="togglePiP()" title="Thu nhỏ nổi màn hình">🪟 PiP</button>
                     <button class="ctrl-btn ctrl-btn-fs" onclick="toggleFullScreen()" title="Phóng to video">⛶ Phóng to</button>
                 </div>
@@ -435,6 +436,9 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby_HLylDMlpHKUinLUiUWlaWlCuoIxOoqYIb0U46o9ZW0QXP4jzuEX4hcRbdU-NNqU/exec";
 
+        // Biến lưu thông tin bài hát đang phát phục vụ chức năng Yêu Thích
+        let currentPlayingVideo = null;
+
         const slider = document.getElementById('category-menu-bar');
         let isDown = false;
         let startX, scrollLeft;
@@ -465,7 +469,7 @@
             slider.scrollBy({ left: direction * 220, behavior: 'smooth' });
         }
 
-        // HÀM PHÓNG TO TRỰC TIẾP CHỈ THẺ VIDEO (GỒM CẢ SAFARI IOS / CARPLAY)
+        // HÀM PHÓNG TO TRỰC TIẾP CHỈ THẺ VIDEO (HỖ TRỢ SAFARI IOS / CARPLAY & ANDROID)
         function toggleFullScreen() {
             const videoPlayer = document.querySelector('video') || document.querySelector('iframe');
             
@@ -475,12 +479,9 @@
             }
 
             if (videoPlayer.tagName === 'VIDEO') {
-                // Tương thích chuẩn WebKit iOS/Safari trên iPhone & CarPlay
                 if (videoPlayer.webkitEnterFullscreen) {
                     videoPlayer.webkitEnterFullscreen();
-                } 
-                // Tương thích chuẩn Fullscreen API tiêu chuẩn (Android/Chrome/Edge)
-                else if (videoPlayer.requestFullscreen) {
+                } else if (videoPlayer.requestFullscreen) {
                     videoPlayer.requestFullscreen();
                 } else if (videoPlayer.webkitRequestFullscreen) {
                     videoPlayer.webkitRequestFullscreen();
@@ -494,7 +495,14 @@
             }
         }
 
-        async function resolveAndPlay(videoId, title, element) {
+        async function resolveAndPlay(videoId, title, element, thumbnail = '', uploaderName = '') {
+            currentPlayingVideo = {
+                id: videoId,
+                title: title,
+                thumbnail: thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+                uploaderName: uploaderName || 'YouTube'
+            };
+
             document.getElementById('current-title').innerText = "⚡ Đang tải nhanh: " + title;
             
             if (element) {
@@ -530,6 +538,24 @@
                 }
             } catch (err) {
                 alert("Lỗi kết nối máy chủ Flask!");
+            }
+        }
+
+        // HÀM LƯU BÀI HÁT HIỆN TẠI VÀO MỤC YÊU THÍCH (LOCALSTORAGE)
+        function saveCurrentFavorite() {
+            if (!currentPlayingVideo) {
+                alert("Vui lòng chọn phát một bài hát trước khi thêm vào yêu thích!");
+                return;
+            }
+            
+            let favorites = JSON.parse(localStorage.getItem('my_carplay_favorites') || '[]');
+            
+            if (!favorites.some(v => v.id === currentPlayingVideo.id)) {
+                favorites.push(currentPlayingVideo);
+                localStorage.setItem('my_carplay_favorites', JSON.stringify(favorites));
+                alert("❤️ Đã thêm bài hát vào danh mục Yêu Thích!");
+            } else {
+                alert("Bài hát này đã có sẵn trong danh sách Yêu Thích rồi!");
             }
         }
 
@@ -608,6 +634,34 @@
             }
 
             const playlistDiv = document.getElementById('playlist');
+
+            // Xử lý riêng cho danh mục Yêu Thích (Ban đầu trống rỗng)
+            if (query === "FAVORITES_CUSTOM") {
+                let favorites = JSON.parse(localStorage.getItem('my_carplay_favorites') || '[]');
+                
+                if (favorites.length === 0) {
+                    playlistDiv.innerHTML = '<div style="padding:40px 20px; color:#888; text-align:center; font-size:13px; line-height: 1.5;">Danh sách Yêu Thích đang trống.<br>Hãy nghe bài nào hay và bấm nút <b>❤️ Thích</b> để lưu vào đây nhé!</div>';
+                    return;
+                }
+
+                playlistDiv.innerHTML = '';
+                favorites.forEach((video) => {
+                    const item = document.createElement('div');
+                    item.className = 'song-item';
+                    item.onclick = () => resolveAndPlay(video.id, video.title, item, video.thumbnail, video.uploaderName);
+                    item.innerHTML = `
+                        <img class="song-thumb" src="${video.thumbnail}" alt="thumb">
+                        <div class="song-info">
+                            <div class="song-title">${video.title}</div>
+                            <div class="song-artist">${video.uploaderName}</div>
+                        </div>
+                    `;
+                    playlistDiv.appendChild(item);
+                });
+                return;
+            }
+
+            // Xử lý các danh mục tìm kiếm thông thường khác
             playlistDiv.innerHTML = '<div style="padding:20px; color:#DB5304; text-align:center; font-size:12px;">Đang tải danh sách...</div>';
 
             try {
@@ -619,7 +673,7 @@
                     data.videos.forEach((video) => {
                         const item = document.createElement('div');
                         item.className = 'song-item';
-                        item.onclick = () => resolveAndPlay(video.id, video.title, item);
+                        item.onclick = () => resolveAndPlay(video.id, video.title, item, video.thumbnail, video.uploaderName);
                         item.innerHTML = `
                             <img class="song-thumb" src="${video.thumbnail}" alt="thumb">
                             <div class="song-info">
