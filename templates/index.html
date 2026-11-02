@@ -37,7 +37,7 @@
             letter-spacing: 0.5px;
         }
         
-        /* KHUNG TÌM KIẾM CỰC KỲ TO BỰ, DỄ BẤM */
+        /* KHUNG TÌM KIẾM TO BỰ, DỄ BẤM */
         .search-box {
             display: flex;
             gap: 12px;
@@ -80,7 +80,7 @@
             transform: scale(0.95);
             background-color: #B54202;
         }
-        /* PHÓNG TO NÚT MIC GẤP ĐÔI CỰC KỲ NỔI BẬT */
+        /* PHÓNG TO NÚT MIC GẤP ĐÔI */
         .mic-btn {
             background-color: #1F1F1F;
             border: 2px solid #DB5304;
@@ -182,21 +182,21 @@
         }
         .action-buttons {
             display: flex;
-            gap: 5px;
+            gap: 6px;
             flex-wrap: nowrap;
         }
         .ctrl-btn {
             background-color: #1C1C1E;
             color: #FFF;
             border: 1px solid #333;
-            padding: 7px 10px;
+            padding: 8px 12px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 3px;
+            gap: 4px;
             transition: all 0.15s;
             white-space: nowrap;
         }
@@ -205,11 +205,14 @@
             background-color: #DB5304;
             border-color: #DB5304;
         }
+        /* PHÓNG TO NÚT ❤️ THÍCH GẤP ĐÔI NỔI BẬT */
         .ctrl-btn-fav {
-            background-color: #261005;
-            border-color: #DB5304;
+            background-color: #2E1100;
+            border: 2px solid #DB5304;
             color: #DB5304;
+            font-size: 14px;
             font-weight: 800;
+            padding: 8px 16px;
         }
         .ctrl-btn-fs {
             background-color: #DB5304;
@@ -217,38 +220,38 @@
             border: 1px solid #DB5304;
         }
 
-        /* THANH ĐIỀU KHIỂN MEDIA PHỤ (TUA 10S, TRƯỚC/SAU, DỪNG/PHÁT) */
+        /* THANH ĐIỀU KHIỂN MEDIA (TRƯỚC, DỪNG/PHÁT, SAU) */
         .media-control-bar {
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
             margin-top: 6px;
-            gap: 8px;
+            gap: 12px;
             background: #141414;
-            padding: 6px 10px;
-            border-radius: 10px;
+            padding: 8px 14px;
+            border-radius: 12px;
             border: 1px solid #222;
         }
         .media-btn {
             background-color: #222;
             color: #FFF;
             border: 1px solid #333;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
         .media-btn:active { background-color: #DB5304; border-color: #DB5304; transform: scale(0.95); }
         .media-btn-main {
             background-color: #DB5304;
             border-color: #DB5304;
-            font-size: 14px;
-            padding: 6px 16px;
+            font-size: 15px;
+            padding: 8px 24px;
         }
 
         /* KHUNG PHẢI: MENU CHỦ ĐỀ & PLAYLIST */
@@ -455,13 +458,11 @@
                 </div>
             </div>
 
-            <!-- THANH ĐIỀU KHIỂN NHANH TRÊN MÀN HÌNH CARPLAY -->
+            <!-- THANH ĐIỀU KHIỂN MEDIA TRÊN MÀN HÌNH CARPLAY (TRƯỚC, DỪNG/PHÁT, SAU) -->
             <div class="media-control-bar">
-                <button class="media-btn" onclick="playPrevSong()" title="Bài trước">⏮ Trước</button>
-                <button class="media-btn" onclick="skipTime(-10)" title="Tua lùi 10s">⏪ -10s</button>
+                <button class="media-btn" onclick="playPrevSong()" title="Bài trước">⏮ Bài Trước</button>
                 <button class="media-btn media-btn-main" id="play-pause-btn" onclick="togglePlayPause()" title="Dừng / Phát">⏸ Dừng</button>
-                <button class="media-btn" onclick="skipTime(10)" title="Tua tới 10s">+10s ⏩</button>
-                <button class="media-btn" onclick="playNextSong()" title="Bài sau">Sau ⏭</button>
+                <button class="media-btn" onclick="playNextSong()" title="Bài sau">Bài Sau ⏭</button>
             </div>
         </div>
 
@@ -593,7 +594,7 @@
             }
         }
 
-        // CÁC HÀM ĐIỀU KHIỂN MEDIA NHANH
+        // HÀM ĐIỀU KHIỂN MEDIA (DỪNG/PHÁT, BÀI TRƯỚC/SAU)
         function togglePlayPause() {
             const player = document.getElementById('player');
             const btn = document.getElementById('play-pause-btn');
@@ -604,13 +605,6 @@
             } else {
                 player.pause();
                 btn.innerText = "▶ Phát";
-            }
-        }
-
-        function skipTime(seconds) {
-            const player = document.getElementById('player');
-            if (player && !isNaN(player.duration)) {
-                player.currentTime = Math.min(Math.max(player.currentTime + seconds, 0), player.duration);
             }
         }
 
@@ -668,7 +662,7 @@
             }
         }
 
-        // KHI BẤM MIC: TỰ ĐỘNG DỪNG NHẠC ĐỂ NHẬN DIỆN GIỌNG NÓI RÕ HƠN
+        // TỰ ĐỘNG TẠM DỪNG NHẠC KHI BẤM MIC ĐỂ THU ÂM RÕ HƠN
         function startVoiceSearch() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -676,7 +670,6 @@
                 return;
             }
 
-            // Tự động tạm dừng nhạc nền để mic thu âm rõ giọng nói
             const player = document.getElementById('player');
             if (player && !player.paused) {
                 player.pause();
