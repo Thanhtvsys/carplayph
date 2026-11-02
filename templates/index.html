@@ -17,7 +17,7 @@
             position: fixed;
         }
 
-        /* THANH HEADER ĐỈNH MÀN HÌNH (Làm cao hơn để chứa cụm tìm kiếm phóng to gấp đôi) */
+        /* THANH HEADER ĐỈNH MÀN HÌNH */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -53,7 +53,7 @@
             border-radius: 16px;
             outline: none;
             width: 100%;
-            font-size: 20px; /* Chữ to gấp đôi */
+            font-size: 20px;
             transition: all 0.2s;
         }
         .search-box input:focus {
@@ -65,7 +65,7 @@
             color: #FFF;
             border: none;
             padding: 0 28px;
-            height: 60px; /* Nút tìm to gấp đôi */
+            height: 60px;
             border-radius: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -80,7 +80,7 @@
             transform: scale(0.95);
             background-color: #B54202;
         }
-        /* NÚT MIC TO GẤP ĐÔI NỔI BẬT */
+        /* NÚT MIC TO GẤP ĐÔI */
         .mic-btn {
             background-color: #1F1F1F;
             border: 3px solid #DB5304;
@@ -207,7 +207,6 @@
             background-color: #DB5304;
             border-color: #DB5304;
         }
-        /* NÚT ❤️ THÍCH PHÓNG TO GẤP ĐÔI */
         .ctrl-btn-fav {
             background-color: #2E1100;
             border: 2px solid #DB5304;
@@ -239,9 +238,9 @@
             background-color: #222;
             color: #FFF;
             border: 2px solid #333;
-            padding: 12px 28px; /* Tăng kích thước nút to gấp đôi */
+            padding: 12px 28px;
             border-radius: 12px;
-            font-size: 16px; /* Chữ to rõ */
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -460,7 +459,7 @@
                 </div>
             </div>
 
-            <!-- THANH ĐIỀU KHIỂN MEDIA PHÓNG TO GẤP ĐÔI (TRƯỚC, DỪNG/PHÁT, SAU) -->
+            <!-- THANH ĐIỀU KHIỂN MEDIA PHÓNG TO -->
             <div class="media-control-bar">
                 <button class="media-btn" onclick="playPrevSong()" title="Bài trước">⏮ Bài Trước</button>
                 <button class="media-btn media-btn-main" id="play-pause-btn" onclick="togglePlayPause()" title="Dừng / Phát">⏸ Dừng</button>
@@ -529,23 +528,42 @@
             slider.scrollBy({ left: direction * 220, behavior: 'smooth' });
         }
 
+        // HÀM PHÓNG TO VÀ THU NHỎ VIDEO AN TOÀN (KHÔNG BỊ TRÀN WEB)
         function toggleFullScreen() {
-            const videoPlayer = document.querySelector('video') || document.querySelector('iframe');
-            if (!videoPlayer) return;
-            if (videoPlayer.tagName === 'VIDEO') {
-                if (videoPlayer.webkitEnterFullscreen) {
-                    videoPlayer.webkitEnterFullscreen();
-                } else if (videoPlayer.requestFullscreen) {
-                    videoPlayer.requestFullscreen();
-                } else if (videoPlayer.webkitRequestFullscreen) {
-                    videoPlayer.webkitRequestFullscreen();
+            const videoWrapper = document.getElementById('player-wrapper');
+            const videoPlayer = document.getElementById('player');
+            const targetElement = videoPlayer || videoWrapper;
+
+            const isInFullscreen = document.fullscreenElement || 
+                                   document.webkitFullscreenElement || 
+                                   document.webkitPresentationMode === 'picture-in-picture';
+
+            if (!isInFullscreen) {
+                if (videoPlayer && typeof videoPlayer.webkitEnterFullscreen === "function") {
+                    try {
+                        videoPlayer.webkitEnterFullscreen();
+                    } catch (e) {
+                        requestFull(targetElement);
+                    }
+                } else {
+                    requestFull(targetElement);
                 }
-            } else if (videoPlayer.tagName === 'IFRAME') {
-                if (videoPlayer.requestFullscreen) {
-                    videoPlayer.requestFullscreen();
-                } else if (videoPlayer.webkitRequestFullscreen) {
-                    videoPlayer.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (videoPlayer && typeof videoPlayer.webkitExitFullscreen === "function") {
+                    videoPlayer.webkitExitFullscreen();
                 }
+            }
+        }
+
+        function requestFull(element) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen().catch(err => console.log(err));
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
             }
         }
 
@@ -624,7 +642,7 @@
             }
         }
 
-        // BỎ HOÀN TOÀN CÁC THÔNG BÁO ALERT KHI BẤM THÍCH
+        // LƯU YÊU THÍCH KHÔNG HIỆN THÔNG BÁO ALERT
         function saveCurrentFavorite() {
             if (!currentPlayingVideo) return;
             let favorites = JSON.parse(localStorage.getItem('my_carplay_favorites') || '[]');
@@ -648,12 +666,11 @@
             } catch (err) {}
         }
 
-        // KHI BẤM MIC: TỰ ĐỘNG DỪNG NHẠC NGAY LẬP TỨC ĐỂ THU ÂM GIỌNG NÓI
+        // BẤM MIC: TỰ ĐỘNG DỪNG NHẠC NGAY LẬP TỨC ĐỂ THU ÂM GIỌNG NÓI
         function startVoiceSearch() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return;
 
-            // Dừng nhạc ngay lập tức khi bấm nút Mic
             const player = document.getElementById('player');
             if (player && !player.paused) {
                 player.pause();
