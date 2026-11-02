@@ -28,7 +28,6 @@ def search_videos():
     if not query:
         return jsonify({'success': False, 'videos': []})
 
-    # Nếu là danh mục Yêu Thích cá nhân hóa (xử lý trực tiếp phía client qua localStorage)
     if query == "FAVORITES_CUSTOM":
         return jsonify({'success': True, 'videos': []})
 
@@ -36,7 +35,7 @@ def search_videos():
         'extract_flat': True,
         'no_warnings': True,
         'quiet': True,
-        'playlistend': 12,
+        'playlistend': 15,
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web']
@@ -45,7 +44,7 @@ def search_videos():
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(f"ytsearch12:{query}", download=False)
+            info = ydl.extract_info(f"ytsearch15:{query}", download=False)
             videos = []
             for entry in info.get('entries', []):
                 vid = entry.get('id')
